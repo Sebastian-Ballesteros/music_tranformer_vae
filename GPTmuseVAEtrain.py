@@ -10,19 +10,26 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 
-# Hyperparameters
-batch_size = 32 # how many independent sequences will we process in parallel?
-block_size = 254 # what is the maximum context length for predictions?
-z_dim = 64
-max_iters = 15000
-eval_interval = 100
-learning_rate = 1e-4
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-eval_iters = 200
+# Model Hyperparameters
 n_embd = 32
 n_head = 4
 n_layer = 3
+z_dim = 64
+block_size = 254 # what is the maximum context length for predictions?
 dropout = 0.2
+########################
+
+#Training hyperparameters
+
+batch_size = 32 # how many independent sequences will we process in parallel?
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+max_iters = 15000
+eval_interval = 100
+learning_rate = 1e-4
+eval_iters = 200
+
 # ------------
 
 @torch.no_grad()

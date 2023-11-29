@@ -35,7 +35,7 @@ def get_batch(data, batch_size):
 
 def process_dataset_for_z(data):
 
-    x = torch.stack([value['input_ids'][:-1] for value in data])
+    x = torch.stack([value['input_ids'] for value in data])
     lables = [ decode_artist_label(label['labels'],get_artist_label.artist_id_mapping) for label in data] 
 
     return x, lables

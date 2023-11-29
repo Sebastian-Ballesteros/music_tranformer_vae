@@ -38,9 +38,6 @@ class VAE(nn.Module):
 
         # Manipulate the latent space
         z = self.reparameterize(mu, logvar)
-        print('magnitude',magnitude)
-        print('z_vector',z_vector)
-        print('z',z)
         z += (magnitude * z_vector)
 
         return self.decode(z.view(B, T, -1)), mu, logvar
