@@ -11,22 +11,21 @@ from tqdm import tqdm
 
 
 # Model Hyperparameters
-n_embd = 32
-n_head = 4
-n_layer = 3
-z_dim = 64
+n_embd = 64
+n_head = 8
+n_layer = 4
+z_dim = 16
 block_size = 254 # what is the maximum context length for predictions?
 dropout = 0.2
 ########################
 
 #Training hyperparameters
 
+patience = 10  # Number of consecutive iterations without improvement to tolerate
 batch_size = 32 # how many independent sequences will we process in parallel?
-
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
 max_iters = 15000
-eval_interval = 100
+eval_interval = 200
 learning_rate = 1e-4
 eval_iters = 200
 
@@ -37,10 +36,14 @@ def estimate_loss():
     out = {}
     model.eval()
     for split in ['train', 'val']:
+        data = subset_train if split == 'train' else subset_valid
         losses = torch.zeros(eval_iters)
         for k in range(eval_iters):
-            X, Y = ut.get_batch(subset_valid, batch_size)
-            logits, loss = model(X, Y)
+            X, Y = ut.get_batch(data, batch_size)
+
+            logits, pred_loss, loss_vae = model(X, Y)
+            loss = pred_loss
+            
             losses[k] = loss.item()
         out[split] = losses.mean()
     model.train()
@@ -64,7 +67,7 @@ model = GPTmuseVAE( vocab_size= len(tokenizer),
                     n_embd = n_embd,
                     n_head = n_head,
                     n_layer = n_layer,
-                    z_dim = z_dim,
+                    z_dim = z_dim, 
                     block_size = block_size,
                     dropout = dropout)
 
@@ -83,8 +86,7 @@ os.makedirs(checkpoint_folder, exist_ok=True)
 train_losses = []
 val_losses = []
 
-# Early stopping parameters
-patience = 3  # Number of consecutive iterations without improvement to tolerate
+
 best_val_loss = float('inf')
 counter = 0
 
@@ -123,7 +125,8 @@ for iter in tqdm(range(max_iters)):
     xb, yb = ut.get_batch(subset_train, batch_size)
 
     # Evaluate the loss
-    logits, loss = model(xb, yb)
+    logits, pred_loss, loss_vae = model(xb, yb)
+    loss = pred_loss + loss_vae
     optimizer.zero_grad(set_to_none=True)
     loss.backward()
     optimizer.step()
